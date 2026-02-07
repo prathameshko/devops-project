@@ -1,3 +1,1 @@
-aws pipeline done
-ok
-done
+aws pipeline done generated via github action
