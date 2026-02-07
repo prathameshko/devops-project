@@ -12,6 +12,12 @@ jobs:
     - uses: actions/checkout@v3
 
     - uses: hashicorp/setup-terraform@v2
+    
+    - name: Package Lambda functions
+      run: |
+        cd lambda
+        zip -r processor.zip processor.py
+        zip -r report.zip report.py
 
     - name: Terraform Init
       run: terraform init
