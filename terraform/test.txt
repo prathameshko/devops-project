@@ -1,1 +1,1 @@
-aws pipeline done generated via github_action.
+aws pipeline done generated via github_action. ok
