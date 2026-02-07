@@ -2,35 +2,45 @@ name: Deploy Free Tier Pipeline
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-    - uses: hashicorp/setup-terraform@v2
-    
-    - name: Configure AWS Credentials
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2
+
+    - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v4
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ secrets.AWS_REGION }}
+        aws-region: ap-south-1
 
-    
-    - name: Package Lambda functions
+    - name: Verify AWS identity
+      run: aws sts get-caller-identity
+
+    - name: Package Lambda
       run: |
         cd lambda
         zip -r processor.zip processor.py
         zip -r report.zip report.py
+        ls -l
 
     - name: Terraform Init
       run: terraform init
       working-directory: terraform
 
-    - name: Terraform plan
+    - name: Terraform Plan
       run: terraform plan
+      working-directory: terraform
+
+    - name: Terraform Apply
+      run: terraform apply -auto-approve
       working-directory: terraform
