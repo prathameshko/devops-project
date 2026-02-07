@@ -94,6 +94,7 @@ resource "aws_lambda_function" "processor" {
   runtime       = "python3.9"
   handler       = "processor.handler"
   filename      = "../lambda/processor.zip"
+  source_code_hash = filebase64sha256("../lambda/processor.zip")
 }
 
 resource "aws_lambda_function" "report" {
@@ -102,6 +103,7 @@ resource "aws_lambda_function" "report" {
   runtime       = "python3.9"
   handler       = "report.handler"
   filename      = "../lambda/report.zip"
+  source_code_hash = filebase64sha256("../lambda/report.zip")
 }
 
 #####################
