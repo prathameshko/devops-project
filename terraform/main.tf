@@ -13,10 +13,12 @@ resource "aws_s3_bucket" "raw" {
 
 resource "aws_s3_bucket" "processed" {
   bucket = "free-processed-data-bucket-12345"
+  force_destroy = true
 }
 
 resource "aws_s3_bucket" "reports" {
   bucket = "free-reports-data-bucket-12345"
+  force_destroy = true
 }
 
 #####################
@@ -44,8 +46,29 @@ resource "aws_iam_role_policy" "lambda_policy" {
     Statement = [
       {
         Effect = "Allow"
-        Action = ["s3:GetObject", "s3:PutObject"]
-        Resource = "arn:aws:s3:::free-*-bucket-12345/*"
+        Action = [
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:ListBucket",
+          "lambda:GetPolicy",
+          "lambda:RemovePermission",
+          "lambda:DeleteFunction",
+          "s3:DeleteBucket",
+          "s3:DeleteObject",
+          "iam:DeleteRole",
+          "iam:DeleteRolePolicy",
+          "events:DeleteRule",
+          "events:RemoveTargets"
+
+        ]
+        Resource = [
+          aws_s3_bucket.raw.arn,
+          "${aws_s3_bucket.raw.arn}/*",
+          aws_s3_bucket.processed.arn,
+          "${aws_s3_bucket.processed.arn}/*",
+          aws_s3_bucket.reports.arn,
+          "${aws_s3_bucket.reports.arn}/*"
+        ]
       },
       {
         Effect = "Allow"
@@ -59,6 +82,7 @@ resource "aws_iam_role_policy" "lambda_policy" {
     ]
   })
 }
+
 
 #####################
 # LAMBDA FUNCTIONS
@@ -99,6 +123,7 @@ resource "aws_s3_bucket_notification" "s3_trigger" {
     lambda_function_arn = aws_lambda_function.processor.arn
     events              = ["s3:ObjectCreated:*"]
   }
+  depends_on = [aws_lambda_permission.allow_s3]
 }
 
 #####################
